@@ -1,0 +1,208 @@
+---
+title: "Aula 1"
+author: "João Miguel Maraschin Santos, 2024"
+date: "2024-03-13"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#1. Operadores
+```{r}
+1+1 #sum
+2*2 #times
+4/2 #division
+5^2 #square
+5**2 #square
+sqrt(100) #squareroot
+log(pi) #log
+log10(pi) #log10
+seq(1,10) #sequence
+(1:10)
+
+a<-10
+b<-2
+x<-1:10
+
+y=a*x+b
+plot(y)
+lines(y)
+
+z=x^2+b
+plot(z)
+lines(z)
+```
+
+
+#2. Funções
+```{r}
+#Bhaskara -> 4x^2-3*x-1=0
+a<-4
+b<--3
+c<--1
+
+d<-((b^2)-4*a*c)
+
+x1<-(-b+sqrt(d))/(2*a)
+x2<-(-b-sqrt(d))/(2*a)
+
+bk<-function(a,b,c){                                                            #a,b,c
+  d<-((b^2)-4*a*c)                                                              #delta
+  if (d < 0) {                                                                  #basic condition
+    return("No real roots")                                                     #answer
+  } 
+  else {
+  x1<-(-b+sqrt(d))/(2*a)                                                        #x1 = +
+  x2<-(-b-sqrt(d))/(2*a)                                                        #x2 = -
+  return(c(x1,x2))                                                              #answer
+}}
+
+
+#5x^2-2x+7=0
+bk(5,2,-2)
+
+
+#4x^2-3*x-1=0
+bk(4,-3,-1)
+
+rt<-bk(4,-3,-1)                                                                 #roots
+
+y_intercept <- c
+x_intercecpt <- rt
+
+
+#Gráfico
+curve(a*x^2 + b*x + c,                                                          #curve
+      from = -5, to = 5,                                                        #limits
+      ylim = c(-5, 5),
+      add=TRUE)
+points(rt,                                                                      #values
+       a*rt^2 + b*rt + c,                                                       #function
+       col = "green", pch = 16)
+text(0, y_intercept,                                                            #x,y
+     paste("C = ", y_intercept),                                                #text and value
+     pos = 4, col = "red")
+text(1.25,0,
+     paste("x1"),
+     pos = (3), col = "blue")
+text(-0.5,0,
+     paste("X2"),
+     pos = (3),col="blue")
+abline(h=0)
+abline(v=0)
+```
+
+
+#3. Class
+```{r}
+#Class
+#Numeric
+a=0.1
+is.numeric(a)
+is.integer(a)
+as.integer(a)
+
+
+#interger
+b=12L
+is.numeric(b)
+is.integer(b)
+
+
+#character ou string
+c="geology"
+
+
+#logic
+d=TRUE
+  2+2==4
+
+e=FALSE
+  2+2==5
+  
+class(a)
+class(b)
+class(c)
+class(d)
+class(e)
+```
+
+
+#4 Structures 
+```{r}
+#matrix -> two dimension variables
+matriz<-matrix(1:10, nrow = 2, ncol =5, byrow=FALSE)
+matriz
+
+matriz[1,3] #position
+matriz[1,] #row
+matriz[,1] #column
+
+
+#vector -> sequence
+even<-seq(2,20,2)
+odd<-seq(1,20,2)
+
+cbind(even,odd) #column bind
+rbind(odd,even) #row bind
+
+
+#data frame -> "matrix" with different classes
+A <- c("sandstone", "conglomerate", "shale")
+B <- c(2.00, 2.001, 0.063)
+C <- c("medium", "poor", "well")
+
+data <- data.frame(lithology=A,grainsize=B,sorting=C)
+print(data)
+
+str(dados)
+
+#factor -> utilização para variáveis categóricas
+lithology <- factor(c("shale","sandstone","shale","sandstone","shale","conglomerate","conglomerate")) #factor
+  print(lithology)
+  levels(lithology)
+  print(lithology[1]) #position
+  print(lithology[4])
+
+litho_abc <-factor(c("shale","sandstone","shale","sandstone","shale","conglomerate","conglomerate")) #create and edit factor
+  litho_abc[1] <- "conglomerate"
+  litho_abc[2] <- "sandstone"
+  litho_abc[3] <- "shale"
+  litho_order <- sort(as.character(litho_abc))
+  print(litho_order)
+  print(litho_order[1])
+  
+size <- c(shale = 0.063, sandstone = 2, conglomerate = 2.1) #grainsize
+
+  grainsize <- size[match(as.character(litho_abc), names(size))] #matching size with lithology
+  litho_data <- data.frame(lithology = litho_abc, grainsize = grainsize) #dataframe
+
+print(litho_data)
+
+
+#list -> tridimensional data 
+x<-1:4
+y<-10:13
+z<-2:7
+list<-list(x,y,z)
+print(list)
+
+list[[2]] #select the X list [[]]
+list[[2]][3] #select the X position []
+
+
+#array ->  multidimensional same class
+wellcore <- array(data = c(10,15,25,30,
+                           20,30,45,50,
+                           10,15,25,35,
+                           10,15,20,50,
+                           5,10,20,35,
+                           10,15,20,25),                                        #values
+              dim = c(4,3,2),                                                   #dimension
+              dimnames = list(core = c("1","2","3","4"),                        #definição das dimensões
+                              litho = c("sandstone","conglomerate","shale"),
+                              field = c("A","B")))
+print(wellcore)
+```
+
+

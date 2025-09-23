@@ -1,0 +1,180 @@
+---
+title: "Part 3"
+author: "João Miguel Maraschin Santos"
+date: "2025-09-17"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#1. Install packages
+```{r}
+#install.packages("tidyverse")
+#install.packages("tidyterra")
+#install.packages("geobr")
+#install.packages("elevatr")
+#install.packages("terra")
+#install.packages("sf")
+#install.packages("ggspatial")
+#install.packages("mapview")
+#install.packages("rnaturalearth")
+#install.packages("devtools")
+#install.packages("raster")
+```
+
+#2. Library
+```{r}
+library(tidyverse)
+library(tidyterra)
+library(geobr)
+library(elevatr)
+library(terra)
+library(sf)
+library(ggspatial)
+library(mapview)
+library(rnaturalearth)
+library(devtools)
+```
+
+#3. Mapview
+```{r}
+mapview()
+
+points_csv <- read.csv("./Files/andes_outcrops.csv") %>%
+  as_tibble()
+
+points_sf <- st_as_sf(points_csv,
+                      coords = c("Longitude", #X
+                                 "Latitude"), #Y
+                      crs = 4326) #crs = WGS84
+
+mapview(points_sf)
+
+argentina <- ne_countries(country = "argentina", scale = "medium", returnclass = "sf")
+chile <- ne_countries(country = "chile", scale = "medium")
+bolivia <- ne_countries(country = "bolivia", scale = "medium")
+
+#plot(argentina$geometry)
+
+#arg <- st_write(argentina, "./Files/argentina.shp")
+#chl <- st_write(chile, "./Files/chile.shp")
+#bol <- st_write(bolivia, "./Files/bolivia.shp")
+
+elev <- get_elev_raster(locations = argentina, z = 7)
+#mask
+plot(elev)
+
+elev_spdf <- as(elev, "SpatialPixelsDataFrame")
+elev_df <- as.data.frame(elev_spdf) 
+colnames(elev_df) <- c("value", "x", "y")
+
+hipso <- colorRampPalette(c("lightblue", "blue", "darkblue", "green", "gold", "darkgoldenrod", "brown","white"))(100)           #hipsometric colour ramp
+
+ggplot()+
+  geom_tile(data = elev_df, 
+            aes(x=x, y=y, 
+                fill=value, 
+                alpha = 0.5)) +       #raster
+  
+  geom_sf(data = arg, 
+          fill = "transparent", 
+          color = "black")+ #arg
+  geom_sf(data = chl, 
+          fill = "transparent", 
+          color = "black")+ #chl
+  geom_sf(data = bol, 
+          fill = "transparent", 
+          color = "black")+ #bol
+  
+  geom_sf(data = points_sf,
+          size = 3)+        #outcrops
+  
+  #geom_sf_text(data = csv_sf, aes(label = Title)+                              #outcrops names
+  
+  scale_fill_gradientn(colors = hipso)+                                         #colour ramp
+  
+  lims(x = c(-71,-65),                                                          #lim
+       y = c(-26,-20)) +
+  
+  coord_sf(expand = FALSE)+                                                     #remove space
+  annotation_scale(location = "bl")+
+  annotation_north_arrow(location = "tr")+
+  
+  labs(x = "Longitude",
+       y = "Latitude",
+       title = "Central Andes Filedtrip",
+       subtitle = "UFRGS, 2023",
+       fill = "Elevation")+
+  
+  theme_void()
+```
+
+#4. Norway topo map
+```{r}
+norway <- ne_countries(country = "norway", scale = "medium")
+#nor <- st_write(norway, "./Files/norway.shp")
+
+#plot raster elevation
+elev_nor <- get_elev_raster(locations = norway, z = 8)
+mask_nor <- mask(elev_nor, norway)
+plot(mask_nor)
+
+#transform raster to spdf
+nor_spdf <- as(mask_nor, "SpatialPixelsDataFrame")
+nor_df <- as.data.frame(nor_spdf)
+colnames(nor_df) <- c("value", "x", "y")
+
+
+ggplot()+
+  geom_tile(data = nor_df, aes(x=x, y=y, fill=value)) +                     #raster
+  scale_fill_gradientn(colors = hipso)+                                     #colour ramp
+  coord_sf(expand = FALSE)+                                                 #remove space
+  annotation_scale(location = "bl")+
+  annotation_north_arrow(location = "tl")+
+  labs(x = "Longitude",
+       y = "Latitude",
+       title = "Topography of Norway",
+       subtitle = "UFRGS, 2025",
+       fill = "Elevation")+
+  theme_void()
+```
+
+#5. Geological map
+```{r}
+#Geobr
+poa <- read_municipality(code_muni = 4314902,2020) %>% 
+  st_transform(crs = 32722)
+
+mapview(poa)
+
+poa_geo <- st_read("./Files/poa_geology/litho.shp") %>% 
+  st_transform(crs = 32722) 
+
+mask_poa <- st_intersection(poa_geo,poa)
+
+unique(mask_poa$NOME)
+
+poa_geo$NOME <- factor(poa_geo$NOME, levels = c("Unidade Depósitos eólicos atuais","Unidade Depósitos de planície lagunar atual","Unidade Depósitos de turfas","Unidade Depósitos de barreira holocênica - depósitos deltáicos","Depósitos aluvionares","Depósitos eluviais e coluviais","Suíte Cerro Grande","Fácies Serra do Herval","Suíte Dom Feliciano"))
+
+poa_geo$NOME <- factor(poa_geo$NOME, levels = c("Unidade Depósitos eólicos atuais","Unidade Depósitos de planície lagunar atual","Unidade Depósitos de turfas","Unidade Depósitos de barreira holocênica - depósitos deltáicos","Depósitos aluvionares","Depósitos eluviais e coluviais","Suíte Cerro Grande","Fácies Serra do Herval","Suíte Dom Feliciano"))
+
+#4. Elev raster
+elev_poa <- get_elev_raster(locations = poa, z =10)
+topo_poa <- mask(elev_poa,poa)
+plot(topo_poa)
+
+#Raster to dataframe
+poa_spdf <- as(topo_poa, "SpatialPixelsDataFrame")
+poa_df <- as.data.frame(poa_spdf)
+colnames(poa_df) <- c("value", "x", "y")
+
+#Dataframe to shapefile
+poa_sf <- st_as_sf(poa_df, coords = c("x", "y"))
+st_write(poa_sf,"./Files/dem.shp")
+
+#5. mapiview
+mapview(poa_geo,zcol = "NOME",col.regions = c("yellow","yellow3","gold","goldenrod","orange","darkorange1","lightsalmon","salmon","darkred"),alpha.regions = 1)
+
+mapview(topo_poa)
+```
+

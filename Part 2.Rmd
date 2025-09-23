@@ -1,0 +1,192 @@
+---
+title: "Part 2"
+author: "João Miguel Maraschin Santos, 2024"
+date: "2025-09-17"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(ggtern)
+```
+
+#1. Array
+```{r}
+gastropod_genera <- c("Turritella sp.", "Conus sp.", "Neritina sp.", "Cypraea sp.")
+shell_composition <- c("Aragonite (%)", "Calcite (%)", "Mg Content (ppm)")
+geologic_formations <- c("Piaui Formation", "Itaituba Formation")
+
+fossil_data <- c(
+  95, 98, 85, 99, #Aragonite
+  5, 2, 15, 1, #Calcite
+  1500, 1200, 2500, 1100, #Mg
+  80, 85, 70, 90, #Aragonite
+  20, 15, 30, 10, #Calcite 
+  1800, 1600, 3100, 1400) #Mg
+
+
+gastropod_analysis <- array(
+  data = fossil_data, #values from
+  dim = c(4, 3, 2), #dim values
+  dimnames = list( #dim names
+    Genera = gastropod_genera, #column and values from
+    Composition = shell_composition, #column and values from
+    Formation = geologic_formations) #column and values from
+  ) 
+
+
+print(gastropod_analysis)
+```
+
+#2. Array - practice
+```{r}
+#4 Cromitite samples: A, B, C, D form each deposit
+#4 Oxides: Cr2O3, Al2O3, FeO, MgO
+#2 Deposits: Podiform and Stratiform
+
+
+Cr_analysis <- array()
+
+chromite_chemical_data <- c(
+  55, 56, 54, 58, #Cr-p
+  25, 24, 26, 22, #Al-p
+  12, 13, 11, 12, #Fe-p
+  15, 14, 16, 15, #Mg-p
+  48, 46, 49, 47, #Cr-S
+  15, 16, 14, 15, #Al-s
+  25, 24, 26, 23, #Fe-s
+  10, 11, 09, 12) #Mg-s
+  #A  #B  #C  #D
+
+
+```
+
+#3. Answer
+```{r}
+chromite_samples <- c("Sample-01A", "Sample-01B", "Sample-02A", "Sample-03A")
+analyzed_oxides <- c("Cr2O3", "Al2O3", "FeO", "MgO")
+deposit_types <- c("Podiform Deposit", "Stratiform Deposit")
+
+chromite_chemical_data <- c(
+  55, 56, 54, 58, 25, 24, 26, 22, 12, 13, 11, 12, 15, 14, 16, 15,
+  48, 46, 49, 47, 15, 16, 14, 15, 25, 24, 26, 23, 10, 11, 9, 12
+)
+
+chromite_analysis <- array(
+  data = chromite_chemical_data,
+  dim = c(4, 4, 2),
+  dimnames = list(
+    Sample = chromite_samples,
+    Oxide = analyzed_oxides,
+    Deposit = deposit_types
+  )
+)
+
+print(chromite_analysis)
+```
+
+#4. Geochem plot
+```{r}
+SiAl<- data.frame(
+  SiO2 = c(45, 50, 55, 60, 65, 70, 75), #values of Si
+  Al2O3 = c(18, 22, 1, 40, 13, 23, 12)) #Values of Al
+
+ggplot(data = SiAl, aes(x = SiO2, y = Al2O3)) + #aes = mapping columns to axis
+  geom_point(size = 4, color = "blue") +
+  labs(
+    title = "SiO2 x Al2O3",
+    x = "SiO2 %",
+    y = "Al2O3 %") +
+  theme_minimal()
+```
+
+#5. Geochem plot - practise
+```{r}
+DZ <- data.frame(
+  Pb207_U235 = c(0.280, 0.275, 0.282, 0.281, 0.278, 0.265, 0.255),
+  Pb206_U238 = c(0.0398, 0.0392, 0.0400, 0.0399, 0.0395, 0.0380, 0.0368))
+
+ggplot()
+```
+ 
+#6. Answer
+```{r}
+DZ <- data.frame(
+  Pb207_U235 = c(0.280, 0.275, 0.282, 0.281, 0.278, 0.265, 0.255),
+  Pb206_U238 = c(0.0398, 0.0392, 0.0400, 0.0399, 0.0395, 0.0380, 0.0368))
+
+ggplot() +
+  geom_point(data = DZ, 
+             aes(x = Pb207_U235, y = Pb206_U238),
+             size = 4, 
+             color = "red") +
+  labs(
+    title = "U-Pb",
+    x = "207Pb / 235U",
+    y = "206Pb / 238U"
+  ) +
+  theme_minimal()
+```
+
+
+#7. GGtern plot
+```{r}
+#set.seed(123) #Random
+
+QFL_data <- tibble(
+  
+  Q = runif(10, 5, 90), #numb of values, from, to
+  F = runif(10, 5, 90), #numb of values, from, to
+  L = runif(10, 5, 90), #numb of values, from, to
+  
+  facies = sample(c("Fluvial", "Aeolian", "Deltaic"), 10, replace = TRUE)) %>% #column facies w/ 10 values
+  
+  rowwise() %>% #group per line
+  mutate(total = sum(Q, F, L), #mutate = modify columns
+         Q = 100 * Q / total, #recalculate 100%
+         F = 100 * F / total, #recalculate 100%
+         L = 100 * L / total) #recalculate 100%
+  %>% select(-total)
+
+  ggtern(data = QFL_data, aes(x = F, y = Q, z = L)) + #aes = mapping columns to axis
+  geom_point(aes(colour = facies), #fill per facies
+             size = 3,
+             stroke = 0.5) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+```
+
+
+#8. GGtern - practise
+```{r}
+QAP_data <- tibble(
+  Q = c(35, 45, 25, 30, 25, 25, 35, 10),
+  A = c(50, 40, 60, 20, 15, 5,  10, 70),
+  P = c(15, 15, 15, 50, 60, 70, 55, 20))
+
+ggtern()
+```
+
+
+#9. Answer
+```{r}
+QAP_data <- tibble(
+  Q = c(35, 45, 25, 30, 25, 25, 35, 10),
+  A = c(50, 40, 60, 20, 15, 5,  10, 70),
+  P = c(15, 15, 15, 50, 60, 70, 55, 20))
+
+ggtern(data = QAP_data, aes(x = A, y = Q, z = P)) +
+  geom_point(size = 3,
+             color = "red",
+             stroke = 0.5) +
+  labs(
+    title = "QAP",
+    x = "A",
+    y = "Q",
+    z = "P"
+  ) +
+  theme_classic()
+```
+

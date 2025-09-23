@@ -1,0 +1,111 @@
+---
+title: "Part 4"
+author: "João Miguel Maraschin Santos"
+date: "2025-09-18"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#Install packages
+```{r}
+install.packages("tidyverse")
+install.packages("tidyterra")
+install.packages("geobr")
+install.packages("elevatr")
+install.packages("terra")
+install.packages("sf")
+install.packages("ggspatial")
+install.packages("mapview")
+install.packages("rnaturalearth")
+install.packages("devtools")
+install.packages("readxl")
+```
+
+
+#Library
+```{r}
+library(tidyverse)
+library(tidyterra)
+library(geobr)
+library(elevatr)
+library(terra)
+library(sf)
+library(ggspatial)
+library(mapview)
+library(rnaturalearth)
+library(devtools)
+library(readxl)
+```
+
+#Ex. 1
+```{r}
+volc <- read_xlsx("./Files/volcano.xlsx") %>% 
+  as_tibble()
+
+volc %>% 
+  mutate(X=longitude,
+         Y=latitude) %>%                                                        #mutate - criar coluna X e Y como long/lat
+   st_as_sf(coords=c("longitude","latitude"),
+           crs= 4326) %>% 
+  st_transform(crs = 3857) %>%                                                  #transform epsg -> wgs
+  dplyr::select(X,Y,major_rock_1,primary_volcano_type,tectonic_settings) %>%
+  mapview(zcol="major_rock_1")
+  #ggplot()+
+  #geom_sf(data=volc)+
+  #geom_sf(data=africa)
+```
+
+#Filtrar vuclcões em pop. 5km
+```{r}
+volc %>% 
+  mutate(X=longitude,
+         Y=latitude) %>%                                                        #mutate - criar coluna X e Y como long/lat
+   st_as_sf(coords=c("longitude","latitude"),
+           crs= 4326) %>%
+  dplyr::filter(region=="South America") %>% 
+  st_transform(crs = 3857) %>%                                                #transform epsg -> wgs
+  dplyr::select(X,Y,major_rock_1,primary_volcano_type,tectonic_settings,volcano_name) %>%
+  mapview(zcol="primary_volcano_type")
+
+sa_volcano <- write.csv(volc,"./Produtos/sa_volc.csv")
+```
+
+```{r}
+volc %>% 
+  mutate(X=longitude,
+         Y=latitude) %>% 
+  dplyr::select(X,Y,region,primary_volcano_type) %>% 
+  filter(region=="South America") %>% 
+  st_as_sf(volc, coords = c("X", "Y"), crs = 4326)-> sa_volc
+
+write.csv(sa_volc,"./Produtos/sa_volc.csv")
+
+
+sa <- ne_countries(continent = "south america",scale = "medium")
+
+plot(sa$geometry)
+```
+
+
+```{r}
+volc %>% 
+  mutate(X=longitude,
+         Y=latitude) %>% 
+  dplyr::select(X,Y,region,primary_volcano_type) %>% 
+  filter(region=="South America") %>% 
+  st_as_sf(coords = c("X", "Y"), crs = 4326) -> sa_volc
+
+mapview(sa_volc)
+
+ggplot() +
+  geom_sf(data = sa, aes(fill = name)) +
+  scale_fill_manual(values = c("green","darkgreen","lawngreen","limegreen","seagreen","springgreen","greenyellow","forestgreen","palegreen","olivedrab3","lightgreen","mediumseagreen","powderblue"))+
+  geom_sf(data = sa_volc,shape = "🌋",size = 2)+
+  coord_sf(xlim = c(-80,-30),
+           ylim = c(-55,10))+
+  annotation_north_arrow(location = "tr",
+                         style = north_arrow_fancy_orienteering)+
+  annotation_scale(location = "br")+
+  theme_classic()
+```
