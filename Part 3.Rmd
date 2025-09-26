@@ -56,9 +56,9 @@ bolivia <- ne_countries(country = "bolivia", scale = "medium")
 
 #plot(argentina$geometry)
 
-#arg <- st_write(argentina, "./Files/argentina.shp")
-#chl <- st_write(chile, "./Files/chile.shp")
-#bol <- st_write(bolivia, "./Files/bolivia.shp")
+arg <- st_write(argentina, "./Produtos/argentina.shp", delete_dsn = TRUE)
+chl <- st_write(chile, "./Produtos/chile.shp", delete_dsn = TRUE)
+bol <- st_write(bolivia, "./Produtos/bolivia.shp", delete_dsn = TRUE)
 
 elev <- get_elev_raster(locations = argentina, z = 7)
 #mask
@@ -177,4 +177,5 @@ mapview(poa_geo,zcol = "NOME",col.regions = c("yellow","yellow3","gold","goldenr
 
 mapview(topo_poa)
 ```
+
 
