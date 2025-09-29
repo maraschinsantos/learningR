@@ -20,6 +20,7 @@ editor_options:
 #install.packages("rnaturalearth")
 #install.packages("devtools")
 #install.packages("raster")
+#install.packages("imager")
 ```
 
 #2. Library
@@ -34,6 +35,7 @@ library(ggspatial)
 library(mapview)
 library(rnaturalearth)
 library(devtools)
+library(imager)
 ```
 
 #3. Mapview
@@ -213,4 +215,5 @@ elmat %>%
 
 render_snapshot()
 ```
+
 
