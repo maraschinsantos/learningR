@@ -180,6 +180,9 @@ mapview(topo_poa)
 
 #6. Rayshader POA 
 ```{r}
+poa <- read_municipality(code_muni = 4314902,2020) %>% 
+  st_transform(crs = 32722)
+
 elev_poa <- get_elev_raster(locations = poa, z =10)
 topo_poa <- mask(elev_poa,poa)
 plot(topo_poa)
@@ -210,3 +213,4 @@ elmat %>%
 
 render_snapshot()
 ```
+
