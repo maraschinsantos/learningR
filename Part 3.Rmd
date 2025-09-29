@@ -178,4 +178,35 @@ mapview(poa_geo,zcol = "NOME",col.regions = c("yellow","yellow3","gold","goldenr
 mapview(topo_poa)
 ```
 
+#6. Rayshader POA 
+```{r}
+elev_poa <- get_elev_raster(locations = poa, z =10)
+topo_poa <- mask(elev_poa,poa)
+plot(topo_poa)
 
+poa_spdf <- as(topo_poa, "SpatialPixelsDataFrame")
+poa_df <- as.data.frame(poa_spdf)
+colnames(poa_df) <- c("value", "x", "y")
+
+poa_sf <- st_as_sf(poa_df, coords = c("x", "y"))
+st_write(poa_sf,"./Produtos/mdt.shp", delete_dsn = TRUE)
+elmat <- raster_to_matrix(elev_poa)
+elmat[is.na(elmat)] <- 1
+
+water_layer <- elmat < 5
+
+water_layer <- water_layer[nrow(water_layer):1, ]
+
+elmat %>%
+  sphere_shade(texture = "desert") %>%
+  add_water(water_layer, color = "lightblue") %>%
+  add_shadow(ray_shade(elmat, zscale = 10), 0.5) %>%
+  add_shadow(ambient_shade(elmat), 0) %>%
+  plot_3d(elmat, 
+          zscale = 12, fov = 0, 
+          theta = 30, phi = 45,
+          windowsize = c(1000, 800), 
+          zoom = 0.75)
+
+render_snapshot()
+```
